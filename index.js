@@ -1,40 +1,37 @@
-const prompt = require("prompt");
+import express from "express";
+import cookieParser from "cookie-parser";
 
-/**
- * Nome: apenas letras, campo obrigatório;
- * Sobrenome: apenas letras, campo obrigatório;
- * Email: dever ser um email válido;
- * CPF: deve ser um CPF válido.
- */
-const schema = {
-  properties: {
-    nome: {
-      pattern: /[A-Za-zÀ-ȕ]/gm,
-      message: "apenas letras, campo obrigatório",
-      required: true,
-    },
-    sobrenome: {
-      pattern: /[A-Za-zÀ-ȕ]/gm,
-      message: "apenas letras, campo obrigatório",
-      required: true,
-    },
-    email: {
-      pattern: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g,
-      message: "O email deve ser válido",
-    },
-    cpf: {
-      pattern:
-        /([0-9]{2}[\.]?[0-9]{3}[\.]?[0-9]{3}[\/]?[0-9]{4}[-]?[0-9]{2})|([0-9]{3}[\.]?[0-9]{3}[\.]?[0-9]{3}[-]?[0-9]{2})/,
-      message: "O cpf deve ser válido",
-    },
-  },
-};
+import { isLoggedIn } from "./auth/helpers.js";
+import { initializeStrategies } from "./auth/passport.js";
+import { fileURLToPath } from "url";
+import path, { dirname } from "path";
+import { authRouter } from "./auth/routes.js";
+import { adminRouter } from "./auth/admin.js";
 
-prompt.start();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-prompt.get(schema, function (error, result) {
-  for (const [key, value] of Object.entries(result)) {
-    console.log(`${key}: ${value}`);
-  }
-  if (error) throw new Error("Houve algum erro no envio dos dados");
+const app = express();
+
+// auth setup
+initializeStrategies(app);
+
+// view engine setup
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "hbs");
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, "public")));
+
+app.use("/auth", authRouter);
+app.use("/admin", adminRouter);
+
+app.get("/", isLoggedIn, (req, res) => {
+    res.render("index", { user: req.user });
+});
+
+app.listen(3000, () => {
+    console.log("Server is up and running at the port 3000");
 });
