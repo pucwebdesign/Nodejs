@@ -1,0 +1,37 @@
+<div>
+	{{#each products}}
+		<p><b>{{this.name}}</b>: {{this.description}}</p>
+		<p><b>Price</b>: ${{this.price}}</p>
+	{{/each}}
+	<h3>Nota:
+		{{average}}</h3>
+</div>
+
+<h3 class="center__title mt-2">Insira um comentário</h3>
+
+<form class="mt-2" action="/comments" method="POST">
+	<label for="author_name">Nome:</label><br />
+	<input type="text" id="author_name" name="author_name" required /><br />
+
+	<label for="description">Comentário:</label><br />
+	<input type="text" id="description" name="description" required /><br />
+
+	<label for="score">Nota:</label><br />
+	<input type="number" id="score" name="score" min="1" max="5" required /><br
+	/>
+
+	<input type="hidden" id="product_id" name="product_id" value={{id}} />
+
+	<button type="submit">Enviar</button>
+</form>
+
+<ul class="comment__section">
+	<h3 class="center__title mt-2">Comentários</h3>
+	{{#each comments}}
+		<li class="mt-2">
+			<p>{{this.score}}</p>
+			<p>{{this.description}}</p>
+			<h3>{{this.author_name}}</h3>
+		</li>
+	{{/each}}
+</ul>
